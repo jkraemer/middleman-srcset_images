@@ -20,5 +20,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency("middleman-core", [">= 4.2.1"])
 
   # Additional dependencies
-  # s.add_runtime_dependency("gem-name", "gem-version")
+  s.add_runtime_dependency("mini_magick", [">= 4.8.0"])
+  s.add_runtime_dependency("dimensions", [">= 1.3.0"])
 end
