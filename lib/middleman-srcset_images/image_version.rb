@@ -27,6 +27,7 @@ module SrcsetImages
       end
 
       @ratio   = config[:ratio]
+      @original_orientation = config[:original_orientation]
 
       @crop    = config.fetch :crop, false
       @quality = config.fetch :quality, 80
@@ -37,6 +38,10 @@ module SrcsetImages
 
     def default?
       @default
+    end
+
+    def default_for_orientation?
+      @name == @original_orientation
     end
 
     def base64_data

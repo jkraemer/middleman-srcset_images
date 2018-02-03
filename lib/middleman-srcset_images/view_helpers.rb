@@ -3,6 +3,11 @@
 module SrcsetImages
   module ViewHelpers
 
+    # options can be:
+    #
+    # size: pick an image version
+    # link: Set to an url to link to
+    #
     def image_tag(path, options = {})
       # allow for images in article directories to be referenced just by file name
       unless path[?/]
@@ -14,24 +19,36 @@ module SrcsetImages
       # collect srcset info
       options = options.dup
       ext = app.extensions[:srcset_images]
-      versions = ext.image_versions
       rel_path = path.sub(/\A\/?/, "")
+      versions = nil
 
-      if size = options.delete(:size) and
-          (versions = ext.scaled_images[rel_path].select{|v|v.name == size.to_s}).any?
+      if size = options.delete(:size)
+        options[:sizes] = ext.sizes[size]
 
-        default = versions.detect{|v|v.default?} || versions.first
+        scaled_images = ext.scaled_images[rel_path]
+        versions = scaled_images.select{|v| v.name == size.to_s}
+        unless versions.any?
+          versions = scaled_images.select{|v| v.default_for_orientation?}
+        end
 
-        options[:srcset] = versions.map { |v|
-          "#{v.resized_img_path} #{v.width}w"
-        }.join ", "
-        super default.resized_img_path, options
+        if versions.any?
+          path = (versions.detect{|v|v.default?} || versions.first).resized_img_path
+          options[:srcset] = versions.map { |v|
+            "#{v.resized_img_path} #{v.width}w"
+          }.join ", "
+        end
+      end
+
+      link = options.delete(:link)
+      img = super path, options
+
+      if link
+        link_to img, link
       else
-        super
+        img
       end
     end
 
   end
 end
-
 

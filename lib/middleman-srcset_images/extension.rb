@@ -10,7 +10,7 @@ module SrcsetImages
 
     helpers ViewHelpers
 
-    attr_reader :image_versions, :scaled_images
+    attr_reader :image_versions, :scaled_images, :sizes
 
     def initialize(app, options_hash={}, &block)
       # Call super to build options from the options_hash
@@ -20,15 +20,19 @@ module SrcsetImages
       require 'middleman-srcset_images/image'
       require 'middleman-srcset_images/resize_image'
       require 'middleman-srcset_images/version_resource'
+      require 'middleman-srcset_images/html_converter'
 
       # set up your extension
       # puts options.my_option
 
       @config = app.data['srcset_images'] || {}
-      @image_versions = @config['image_versions']
+      @image_versions = @config['image_versions'] || {}
+      @sizes = @config['sizes'] || {}
       @scaled_images = Hash.new{|h,k| h[k] = []}
 
       puts "Image versions: #{image_versions.keys.join ", "}"
+
+      HtmlConverter.install
     end
 
     def after_configuration
