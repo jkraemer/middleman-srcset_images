@@ -5,7 +5,7 @@
 Add the gem to your site's Gemfile.
 
 ~~~~
-gem 'middleman-srcset_images'
+gem 'middleman-srcset_images', github: 'jkraemer/middleman-srcset_images'
 ~~~~
 
 Create a configuration file as outlined below.
@@ -149,3 +149,7 @@ image_versions:
 
 ~~~~
 
+License
+-------
+
+MIT, see LICENSE
