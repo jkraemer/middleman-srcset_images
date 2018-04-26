@@ -1,24 +1,24 @@
+#require 'middleman-srcset_images/create_image_version'
+require 'middleman-srcset_images/vips_create_image_version'
+
 module SrcsetImages
   class ImageVersion
 
-    attr_reader :img_path, :resized_img_path, :config, :name, :width
+    attr_reader :img, :resized_img_path, :config, :name, :width
+    attr_accessor :app
 
     # resized_img_path is the wrong path here
     # (posts/2013/08-17-kilimanjaro/bay_ls_0.jpg instead of
     # 2013/08/kilimanjaro/bay_ls_0.jpg)
     # but it does not seem to matter since this is apparently fixed by
     # middleman itself through the VersionResource
-    def initialize(app, img_path, resized_img_path, config)
-      @middleman_config = app.config
-      @app = app
-
-      @img_path = img_path
+    def initialize(img, resized_img_path, config)
+      @img = img
       @resized_img_path = resized_img_path
-
       @config = config
 
-      @name    = config[:name]
-      @default = !!config[:is_default]
+      @default_for_orientation = config[:name] == img.orientation
+
       @width   = config[:width]
       @height  = config[:height]
 
@@ -26,57 +26,54 @@ module SrcsetImages
         raise ArgumentError, "need at least width or height!\nconfig was: #{config}"
       end
 
-      @ratio   = config[:ratio]
-      @original_orientation = config[:original_orientation]
+      ratio = config[:ratio] || img.xy_ratio
+      if @width.blank?
+        @width = (@height.to_f * ratio).to_i
+      end
+      if @height.blank?
+        @height = (@width.to_f / ratio).to_i
+      end
 
       @crop    = config.fetch :crop, false
       @quality = config.fetch :quality, 80
-      @gravity = config.fetch :gravity, 'Center'
+      @cache_dir = config[:cache_dir]
+    end
 
-      @tmp_dir = config[:tmp_dir]
+
+    def img_path
+      img.rel_path
     end
 
     def default?
-      @default
+      !!config[:is_default]
     end
 
     def default_for_orientation?
-      @name == @original_orientation
+      @default_for_orientation
     end
 
     def base64_data
-      prepare_image
-      Base64.strict_encode64(File.read(cached_resized_img_abs_path))
+      Base64.strict_encode64 render
     end
 
     def render
       prepare_image
-      File.read(cached_resized_img_abs_path)
+      File.read cached_resized_img_abs_path
     end
 
-    def image_checksum
-      @image_checksum ||= Digest::SHA2.file(abs_path).hexdigest[0..16]
-    end
 
-    def image_name
-      File.basename(abs_path)
-    end
+    #def middleman_resized_abs_path
+    # #middleman_abs_path.gsub(img.filename, resized_image_name)
+    #  File.join File.dirname(img.abs_path), resized_image_name
+    #end
 
-    def abs_path
-      File.join(source_dir, @img_path)
-    end
-
-    def middleman_resized_abs_path
-      middleman_abs_path.gsub(image_name, resized_image_name)
-    end
-
-    def middleman_abs_path
-      img_path.start_with?('/') ? img_path : File.join(images_dir, img_path)
-    end
+    #def middleman_abs_path
+    #  img_path.start_with?('/') ? img_path : File.join(images_dir, img_path)
+    #end
 
     def cached_resized_img_abs_path
-      File.join(cache_dir, resized_img_path).split('.').tap { |a|
-        a.insert(-2, image_checksum)
+      File.join(@cache_dir, resized_img_path).split('.').tap { |a|
+        a.insert(-2, img.checksum)
       }.join('.')
     end
 
@@ -89,34 +86,22 @@ module SrcsetImages
     private
 
     def source_dir
-      File.absolute_path(@middleman_config[:source], @app.root)
+      File.absolute_path(app.config[:source], @app.root)
     end
 
     def images_dir
-      @middleman_config[:images_dir]
+      app.config[:images_dir]
     end
 
     def build_dir
-      @middleman_config[:build_dir]
-    end
-
-    def cache_dir
-      File.absolute_path(@tmp_dir, @app.root)
+      app.config[:build_dir]
     end
 
     def save_cached_image
-      if @width.blank?
-        @width = (@height.to_f * @ratio).to_i
-      end
-      if @height.blank?
-        @height = (@width.to_f / @ratio).to_i
-      end
-
       FileUtils.mkdir_p(File.dirname(cached_resized_img_abs_path))
       VipsCreateImageVersion.(
-        @img_path, cached_resized_img_abs_path,
-        width: @width, height: @height,
-        quality: @quality, gravity: @gravity, ratio: @ratio, crop: @crop
+        img.vips, cached_resized_img_abs_path,
+        width: @width, height: @height, quality: @quality, crop: @crop
       )
     end
 

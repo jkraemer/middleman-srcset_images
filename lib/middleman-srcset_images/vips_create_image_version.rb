@@ -9,8 +9,13 @@ module SrcsetImages
       new(*_).call
     end
 
-    def initialize(source_path, destination_path, options = {})
-      @source = source_path
+    def initialize(img, destination_path, options = {})
+      @source = if img.is_a?(String) || img.is_a?(Pathname)
+                  ImageProcessing::Vips.source(img)
+                else
+                  img
+                end
+
       @destination = destination_path
 
       @width  = options[:width]
@@ -22,13 +27,14 @@ module SrcsetImages
 
 
     def call
-      img = ImageProcessing::Vips.source(@source)
-      if @crop
-        img.resize_to_fill @width, @height, crop: :attention
+      img = if @crop
+        @source.resize_to_fill @width, @height, crop: :attention
       else
-        img.resize_to_limit @width, @height
+        @source.resize_to_limit @width, @height
       end
-      processed = img.saver(strip: true, quality: @quality).call
+      processed = img
+        .saver(strip: true, quality: @quality, interlace: true)
+        .call
 
       FileUtils.mkdir_p File.dirname(@destination)
       FileUtils.mv processed, @destination

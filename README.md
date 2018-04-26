@@ -1,5 +1,10 @@
 # Srcset Image Tags for Middleman
 
+## Prerequisites
+
+Install [libvips](https://jcupitt.github.io/libvips) 8.6 or higher.
+Unfortunately on Debian that means compiling it from source.
+
 ## Usage
 
 Add the gem to your site's Gemfile.
@@ -96,11 +101,14 @@ sizes:
   third: "(min-width: 768px) 30vw, 100vw"
   teaser: "(min-width: 768px) 30vw, 100vw"
 
+images: posts/**/*.jpg
+# in case you have symlinked directories to your actual photos, use something
+# like this:
+# images: posts/**{,/*/**}/*.jpg
+
 image_versions:
   # configuration for landscape and square images
   landscape:
-    # path pattern this config should be applied to
-    images: posts/**/*.jpg
     quality: 80
     srcset:
       -
@@ -115,7 +123,6 @@ image_versions:
 
   # portrait content images, cropped to 3:4
   portrait:
-    images: posts/**/*.jpg
     quality: 80
     crop: true
     srcset:
@@ -132,7 +139,6 @@ image_versions:
 
   # teaser image, cropped to landscape 3:2
   teaser:
-    images: posts/**/*.jpg
     crop: true
     quality: 80
     srcset:

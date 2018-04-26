@@ -17,16 +17,17 @@ module SrcsetImages
       super
 
       # Require libraries only when activated
-      require 'middleman-srcset_images/image'
-      require 'middleman-srcset_images/resize_image'
+      require 'middleman-srcset_images/img'
       require 'middleman-srcset_images/version_resource'
       require 'middleman-srcset_images/html_converter'
+      require 'middleman-srcset_images/srcset_config'
 
       # set up your extension
       # puts options.my_option
 
       @config = app.data['srcset_images'] || {}
       @image_versions = @config['image_versions'] || {}
+      @images = @config['images']
       @sizes = @config['sizes'] || {}
       @scaled_images = Hash.new{|h,k| h[k] = []}
 
@@ -43,14 +44,28 @@ module SrcsetImages
       basedir = File.absolute_path(File.join(app.root, app.config[:source]))
       Dir.chdir(basedir) do
         versions = []
-        image_versions.each do |name, config|
-          Dir.glob(config.images) do |image_file|
-            img = Image.new image_file, app, name, config.merge(tmp_dir: options.cache_dir)
-            img.image_versions.each do |v|
+        cache_dir = File.absolute_path(options.cache_dir, app.root)
+
+        configurations = image_versions.map do |name, config|
+          SrcsetImages::SrcsetConfig.new name, config, cache_dir: cache_dir
+        end
+
+        images = Dir.glob(@images).map{|f| SrcsetImages::Img.new(f)}
+
+        # loop over configurations for landscape, portrait, teasers
+        configurations.each do |config|
+
+          #loop over original image files
+          images.each do |img|
+
+            # loop over different image sizes of configuration
+            config.image_versions(img).each do |v|
+              v.app = app
               v.prepare_image
-              @scaled_images[image_file] << v
+              @scaled_images[img.path] << v
               versions << VersionResource.new(app.sitemap, v)
             end
+
           end
         end
         versions.flatten!
