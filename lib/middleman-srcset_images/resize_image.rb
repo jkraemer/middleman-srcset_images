@@ -1,6 +1,7 @@
 require 'middleman-srcset_images/create_image_version'
 
 module SrcsetImages
+  # FIXME unused?
   class ResizeImage
 
     def self.call(image)

@@ -113,7 +113,7 @@ module SrcsetImages
       end
 
       FileUtils.mkdir_p(File.dirname(cached_resized_img_abs_path))
-      CreateImageVersion.(
+      VipsCreateImageVersion.(
         @img_path, cached_resized_img_abs_path,
         width: @width, height: @height,
         quality: @quality, gravity: @gravity, ratio: @ratio, crop: @crop

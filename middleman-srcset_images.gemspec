@@ -22,4 +22,6 @@ Gem::Specification.new do |s|
   # Additional dependencies
   s.add_runtime_dependency("mini_magick", [">= 4.8.0"])
   s.add_runtime_dependency("dimensions", [">= 1.3.0"])
+  s.add_runtime_dependency("image_processing", ["~> 1.0"])
+  s.add_runtime_dependency("ruby-vips", ["~> 2.0"])
 end
