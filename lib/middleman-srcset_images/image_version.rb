@@ -106,7 +106,7 @@ module SrcsetImages
     end
 
     def cached_image_available?
-      File.exist?(cached_resized_img_abs_path)
+      File.readable?(cached_resized_img_abs_path)
     end
 
   end

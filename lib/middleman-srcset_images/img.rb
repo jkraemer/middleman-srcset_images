@@ -5,7 +5,12 @@ require 'middleman-srcset_images/dimensions_patch'
 module SrcsetImages
   class Img
 
+
     attr_reader :path, :abs_path, :width, :height
+
+    def self.xy_ratios
+      @xy_ratios ||= {}
+    end
 
     def initialize(path)
       @path = path
@@ -56,7 +61,7 @@ module SrcsetImages
 
     # TODO can get dimensions from vips?
     def xy_ratio
-      @xy_ratio ||= begin
+      self.class.xy_ratios[abs_path] ||= begin
         File.open(abs_path, 'rb') do |io|
           Dimensions(io)
           io.extend DimensionsPatch
