@@ -5,7 +5,13 @@ module SrcsetImages
 
     # options can be:
     #
-    # size: pick an image version
+    # size: pick a srcset config from the :sizes hash
+    #
+    # version: pick an scaling set from the :image_versions hash. Defaults to
+    # size, and if no such version is defined, will use landscape or portrait
+    # depending on image orientation. In most cases you dont need to give this
+    # option.
+    #
     # link: Set to an url to link to
     #
     def image_tag(path, options = {})
@@ -24,9 +30,10 @@ module SrcsetImages
 
       if size = options.delete(:size)
         options[:sizes] = ext.sizes[size]
+        version_name = (options.delete(:version) || size).to_s
 
         scaled_images = ext.scaled_images[rel_path]
-        versions = scaled_images.select{|v| v.name == size.to_s}
+        versions = scaled_images.select{|v| v.name == version_name}
         unless versions.any?
           versions = scaled_images.select{|v| v.default_for_orientation?}
         end

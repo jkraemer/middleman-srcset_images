@@ -19,6 +19,7 @@ module SrcsetImages
 
       @default_for_orientation = config[:name] == img.orientation
 
+      @name    = config[:name]
       @width   = config[:width]
       @height  = config[:height]
 

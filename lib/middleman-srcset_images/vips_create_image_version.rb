@@ -28,7 +28,7 @@ module SrcsetImages
 
     def call
       img = if @crop
-        @source.resize_to_fill @width, @height, crop: :attention
+        @source.resize_to_fill @width, @height, crop: :centre
       else
         @source.resize_to_limit @width, @height
       end
