@@ -2,11 +2,11 @@
 
 require "dimensions"
 require "fileutils"
-require "image_processing/vips"
 require "pathname"
 
 require "middleman-srcset_images/image"
 require "middleman-srcset_images/srcset_config"
+require "middleman-srcset_images/vips_create_image_version"
 
 module SrcsetImages
   class CreateImageVersions
