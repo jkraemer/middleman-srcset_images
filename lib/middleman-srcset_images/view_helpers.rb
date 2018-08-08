@@ -15,35 +15,31 @@ module SrcsetImages
     # link: Set to an url to link to
     #
     def image_tag(path, options = {})
+      ext = app.extensions[:srcset_images]
+
       # allow for images in article directories to be referenced just by file name
       unless path[?/]
-        page_path = current_page.path
-        dir = File.dirname page_path
-        path = File.join dir, File.basename(page_path, '.html'), path
+        # posts/2016/....html.md
+        page_path = current_page.file_descriptor.relative_path
+        # source/images/posts/2016/...
+        dir = ext.images_dir / File.dirname(page_path)
+        # source/images/posts/2016/.../foo.jpg
+        path = File.join dir, File.basename(page_path, '.html.md'), path
+        rel_path = path
+      else
+        rel_path = Pathname("source") / path.sub(/\A\/?/, "")
       end
 
       # collect srcset info
       options = options.dup
-      ext = app.extensions[:srcset_images]
-      rel_path = path.sub(/\A\/?/, "")
-      versions = nil
 
-      if size = options.delete(:size)
-        options[:sizes] = ext.sizes[size]
+      if File.readable?(rel_path) and size = options.delete(:size)
         version_name = (options.delete(:version) || size).to_s
+        options[:sizes] = ext.sizes[size]
 
-        scaled_images = ext.scaled_images[rel_path]
-        versions = scaled_images.select{|v| v.name == version_name}
-        unless versions.any?
-          versions = scaled_images.select{|v| v.default_for_orientation?}
-        end
+        path, srcset = ext.srcset_config(rel_path, size, version_name)
 
-        if versions.any?
-          path = (versions.detect{|v|v.default?} || versions.first).resized_img_path
-          options[:srcset] = versions.map { |v|
-            "#{v.resized_img_path} #{v.width}w"
-          }.join ", "
-        end
+        options[:srcset] = srcset
       end
 
       link = options.delete(:link)

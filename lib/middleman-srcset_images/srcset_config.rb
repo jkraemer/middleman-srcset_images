@@ -1,34 +1,25 @@
-require 'middleman-srcset_images/image_version'
-
 module SrcsetImages
   class SrcsetConfig
-
     attr_reader :name, :config
 
-    def initialize(name, config, cache_dir:)
+    def initialize(name, config)
       @name = name
       @config = config
 
       @base_config = {
-        name: name,
-        crop: config.fetch(:crop, false),
-        quality: config.fetch(:quality, 80),
-        cache_dir: cache_dir
+        "name" => name,
+        "crop" => config.fetch("crop", false),
+        "quality" => config.fetch("quality", 80),
       }
     end
 
     def image_versions(img)
-      result = []
+      result = {}
 
       if applies_to?(img)
-
-
-        config.srcset.each_with_index do |config, idx|
-          result << ImageVersion.new(
-            img,
-            img.path_for_version(name, idx),
-            @base_config.merge(config.symbolize_keys)
-          )
+        @config["srcset"].each_with_index do |config, idx|
+          result[img.name_for_version(@name, idx)] =
+            @base_config.merge(config)
         end
       end
 
@@ -39,6 +30,6 @@ module SrcsetImages
       not ((name == 'landscape' && img.portrait?) or
            (name == 'portrait' && img.landscape?))
     end
-
   end
+
 end
