@@ -33,7 +33,7 @@ module SrcsetImages
       # collect srcset info
       options = options.dup
 
-      if File.readable?(rel_path) and size = options.delete(:size)
+      if size = options.delete(:size)
         version_name = (options.delete(:version) || size).to_s
         options[:sizes] = ext.sizes[size]
 
