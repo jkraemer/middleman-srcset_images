@@ -57,7 +57,7 @@ module SrcsetImages
       srcset = config.image_versions(img).map do |filename, v|
         path = (destdir / filename).relative_path_from(@source)
         default_path = path if v["is_default"]
-        [ path, v["width"] ]
+        [ path, "#{v["width"]}w" ]
       end
       default_path ||= image_path.relative_path_from(@source)
       srcset = srcset.map{|s| s.join " "}.join(", ")
