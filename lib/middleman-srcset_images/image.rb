@@ -4,20 +4,25 @@ require 'middleman-srcset_images/dimensions_patch'
 
 module SrcsetImages
   class Image
-    attr_reader :xy_ratio, :mtime
+    attr_reader :xy_ratio
 
     def initialize(path)
       @path     = path
       @ext      = File.extname path
       @basename = File.basename path, @ext
-      @mtime    = File.mtime path
+    end
 
-      @xy_ratio = File.open(path, 'rb') do |io|
+    def xy_ratio
+      @xy_ratio ||= File.open(@path, 'rb') do |io|
         Dimensions(io)
         io.extend SrcsetImages::DimensionsPatch
-        @width, @height = io.dimensions
-        @width.to_f / @height
+        width, height = io.dimensions
+        width.to_f / height
       end
+    end
+
+    def mtime
+      @mtime ||= File.mtime @path
     end
 
     def name_for_version(cfg_name, idx)
