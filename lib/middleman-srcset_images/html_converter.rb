@@ -27,7 +27,7 @@ module SrcsetImages
       end
 
       if size
-        attrs[:size] = size
+        attrs[:size] = size.split(" ")[0]
 
         %{<div class="item #{size}">} + scope.image_tag(path, attrs) + "</div>"
       else
