@@ -3,6 +3,32 @@
 module SrcsetImages
   module ViewHelpers
 
+    def img_path(path, options = {})
+      ext = app.extensions[:srcset_images]
+
+      # allow for images in article directories to be referenced just by file name
+      unless String === path and path[?/]
+        # posts/2016/....html.md
+        page_path = current_page.file_descriptor.relative_path
+        # source/images/posts/2016/...
+        dir = ext.images_dir / File.dirname(page_path)
+        # source/images/posts/2016/.../foo.jpg
+        path = File.join dir, File.basename(page_path, '.html.md'), path
+        rel_path = path
+      else
+        rel_path = Pathname("source") / path.sub(/\A\/?/, "")
+      end
+
+      if size = options.delete(:size)
+        version = options.delete(:version) || size
+        path, _srcset = ext.srcset_config(rel_path, size, version)
+      else
+        path = rel_path
+      end
+      "/#{path}"
+    end
+
+
     # options can be:
     #
     # size: pick a srcset config from the :sizes hash
