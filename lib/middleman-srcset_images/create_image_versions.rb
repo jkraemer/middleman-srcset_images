@@ -70,7 +70,8 @@ module SrcsetImages
           SrcsetImages::VipsCreateImageVersion.(
             img.vips, dest_file,
             width: v["width"], height: v["height"],
-            quality: v["quality"], crop: v["crop"]
+            quality: v["quality"], crop: v["crop"],
+            watermark: v["watermark"]
           )
         end
 

@@ -10,6 +10,7 @@ module SrcsetImages
         "name" => name,
         "crop" => config.fetch("crop", false),
         "quality" => config.fetch("quality", 80),
+        "watermark" => config.fetch("watermark", nil),
       }
     end
 
@@ -20,7 +21,7 @@ module SrcsetImages
         @config["srcset"].each_with_index do |config, idx|
           result[img.name_for_version(@name, idx)] =
             @base_config.merge(config)
-        end
+        end if @config["srcset"]
       end
 
       result
